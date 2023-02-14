@@ -111,8 +111,8 @@ class HydrostaticLoad(Load):
         super().__init__(**kwargs)
 
         # Initialize Fourier coefficient calcs
-        self.m = np.array(range(1, 99, 2))
-        self.n = np.array(range(1, 50))
+        self.m = np.array(range(1, 50))
+        self.n = np.array(range(1, 99, 2))
 
 
     def p(self, x, y):

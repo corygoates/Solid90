@@ -53,6 +53,9 @@ class Solver:
         # Plot deflection
         fig, ax = plt.subplots()
         contour_plot = ax.contourf(X, Y, value, 100)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.invert_yaxis()
         cbar = fig.colorbar(contour_plot)
         cbar.ax.set_title(label)
         plt.show()
