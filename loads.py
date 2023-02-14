@@ -60,8 +60,12 @@ class UniformLoad(Load):
         return self.p0
 
     
-    def P_mn(self, m, n):
+    def Pmn(self, m, n):
         return 16.0*self.p0/(np.pi**2*m*n)
+
+    
+    def Pm(self, m):
+        return 4.0*self.p0/(np.pi*m)
 
 
 class SinusoidalLoad(Load):
@@ -119,8 +123,12 @@ class HydrostaticLoad(Load):
         return self.p0*x/self.plate.b
 
 
-    def P_mn(self, m, n):
-        return 8.0*self.p0/(np.pi**2*m*n)*-1**(m+1)
+    def Pmn(self, m, n):
+        return 8.0*self.p0/(np.pi**2*m*n)*(-1)**(m+1)
+
+
+    def Pm(self, m):
+        return 2.0*self.p0/(np.pi*m)*(-1)**(m+1)
 
 
 class PatchLoad(Load):

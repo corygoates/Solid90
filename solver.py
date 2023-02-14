@@ -155,8 +155,8 @@ class NavierSolver(Solver):
 
     def W_mn(self, m, n):
         # Returns the desired Fourier deflection coefficient
-        P_mn = self.load.P_mn(m, n)
-        return P_mn/(((m/self.plate.a)**2 + (n/self.plate.b)**2)**2 * (np.pi**4*self.plate.D))
+        Pmn = self.load.Pmn(m, n)
+        return Pmn/(((m/self.plate.a)**2 + (n/self.plate.b)**2)**2 * (np.pi**4*self.plate.D))
 
 
     def w(self, x, y):
@@ -286,3 +286,34 @@ class LevySolver(Solver):
         super().__init__(plate, load, m_max)
 
         self.BC = BC
+
+
+    def w(self, x, y):
+        # Returns the deflection at the given location
+
+        w = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            Shy = np.sinh(m*np.pi*y/self.plate.a)
+            Chy = np.cosh(m*np.pi*y/self.plate.a)
+            yShy = y*np.sinh(m*np.pi*y/self.plate.a)
+            yChy = y*np.cosh(m*np.pi*y/self.plate.a)
+            Sx = np.sin(m*np.pi*x/self.plate.a)
+            w += (Am*Shy + Bm*Chy + Cm*yShy + Dm*yChy + km)*Sx
+
+        return w
+
+
+    def km(self, m):
+        # Returns the km coefficient
+
+        return self.load.Pm(m)/self.plate.D*(m*np.pi/self.plate.a)**4
+    
+
+    def coefs(self, m):
+        # Returns Am, Bm, Cm, Dm, and km
+
+        km = self.km(m)
+
+        return 0.0, 0.0, 0.0, 0.0, km
