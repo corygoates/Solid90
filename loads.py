@@ -111,16 +111,16 @@ class HydrostaticLoad(Load):
         super().__init__(**kwargs)
 
         # Initialize Fourier coefficient calcs
-        self.m = np.array(range(1, 50))
-        self.n = np.array(range(1, 99, 2))
+        self.m = np.array(range(1, 99, 2))
+        self.n = np.array(range(1, 50))
 
 
     def p(self, x, y):
-        return self.p0*y/self.plate.b
+        return self.p0*x/self.plate.b
 
 
     def P_mn(self, m, n):
-        return 8.0*self.p0/(np.pi**2*m*n)*-1**(n+1)
+        return 8.0*self.p0/(np.pi**2*m*n)*-1**(m+1)
 
 
 class PatchLoad(Load):
@@ -137,10 +137,10 @@ class PatchLoad(Load):
     d : float
         Width of patch in y-direction.
 
-    x1 : float
+    x : float
         Center of patch in x-direction.
 
-    x2 : float
+    y : float
         Center of patch in y-direction.
 
     plate : Plate
@@ -154,8 +154,8 @@ class PatchLoad(Load):
         # Store patch information
         self.c = kwargs.get("c")
         self.d = kwargs.get("d")
-        self.x0 = kwargs.get("x0")
-        self.y0 = kwargs.get("y0")
+        self.x0 = kwargs.get("x")
+        self.y0 = kwargs.get("y")
 
         # Initialize Fourier coef calcs
         self.m = np.array(range(1,50))

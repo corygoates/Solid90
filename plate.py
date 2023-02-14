@@ -30,3 +30,4 @@ class Plate:
         self.h = kwargs.get("h", 0.01)
         self.E = kwargs.get("E", 30.0e6)
         self.v = kwargs.get("v", 0.33)
+        self.D = self.E*self.h**3/(12.0*(1.0-self.v**2))
