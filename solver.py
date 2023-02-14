@@ -5,7 +5,7 @@ from loads import *
 
 
 class Solver:
-    """Generic plate self. class.
+    """Generic plate solver class.
     
     Parameters
     ----------
@@ -88,6 +88,47 @@ class Solver:
         cbar = fig.colorbar(contour_plot)
         plt.show()
 
+    
+    def sigma_x(self, x, y, z):
+        # Returns the x bending stress at the given location
+
+        P = self.d2w_dx2(x, y) + self.plate.v*self.d2w_dy2(x, y)
+        return -self.plate.E*z/(1.0-self.plate.v**2)*P
+
+    
+    def sigma_y(self, x, y, z):
+        # Returns the y bending stress at the given location
+
+        P = self.d2w_dy2(x, y) + self.plate.v*self.d2w_dx2(x, y)
+        return -self.plate.E*z/(1.0-self.plate.v**2)*P
+
+
+    def tau_xy(self, x, y, z):
+        # Returns the plane shear stress at the given location
+
+        return -self.plate.E*z/(1.0+self.plate.v)*self.d2w_dxdy(x, y)
+
+
+    def tau_xz(self, x, y, z):
+        # Returns the transverse shear stress (from equilibrium) at the given location
+
+        P = self.d3w_dx3(x, y) + self.d3w_dxdy2(x,y)
+        Z = 0.25**self.plate.h**2 - z**2
+        return self.plate.E*Z*P/(2.0*(1.0-self.plate.v**2))
+
+
+    def tau_yz(self, x, y, z):
+        # Returns the transverse shear stress (from equilibrium) at the given location
+
+        P = self.d3w_dx2dy(x, y) + self.d3w_dy3(x,y)
+        Z = 0.25**self.plate.h**2 - z**2
+        return self.plate.E*Z*P/(2.0*(1.0-self.plate.v**2))
+
+
+    def corner_reactions(self):
+        # Returns the corner reaction forces
+        pass
+
 
 class NavierSolver(Solver):
     """Solves for the deflection using the Navier solution method.
@@ -129,6 +170,97 @@ class NavierSolver(Solver):
                 w += self.W_mn(mi, ni)*Sx*Sy
 
         return w
+
+
+    def d2w_dx2(self, x, y):
+        # Returns the second derivative of w wrt x
+
+        d2w_dx2 = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Sx = np.sin(mi*np.pi*x/self.plate.a)
+                Sy = np.sin(ni*np.pi*y/self.plate.b)
+                d2w_dx2 += -(mi*np.pi/self.plate.a)**2*self.W_mn(mi, ni)*Sx*Sy
+
+        return d2w_dx2
+
+
+    def d3w_dx3(self, x, y):
+        # Returns the third derivative of w wrt x
+
+        d3w_dx3 = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Cx = np.cos(mi*np.pi*x/self.plate.a)
+                Sy = np.sin(ni*np.pi*y/self.plate.b)
+                d3w_dx3 += -(mi*np.pi/self.plate.a)**3*self.W_mn(mi, ni)*Cx*Sy
+
+        return d3w_dx3
+
+
+    def d2w_dy2(self, x, y):
+        # Returns the second derivative of w wrt y
+
+        d2w_dy2 = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Sx = np.sin(mi*np.pi*x/self.plate.a)
+                Sy = np.sin(ni*np.pi*y/self.plate.b)
+                d2w_dy2 += -(ni*np.pi/self.plate.b)**2*self.W_mn(mi, ni)*Sx*Sy
+
+        return d2w_dy2
+
+
+    def d3w_dy3(self, x, y):
+        # Returns the third derivative of w wrt y
+
+        d3w_dy3 = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Sx = np.sin(mi*np.pi*x/self.plate.a)
+                Cy = np.cos(ni*np.pi*y/self.plate.b)
+                d3w_dy3 += -(ni*np.pi/self.plate.b)**3*self.W_mn(mi, ni)*Sx*Cy
+
+        return d3w_dy3
+
+
+    def d2w_dxdy(self, x, y):
+        # Returns the second mixed derivative of W
+
+        d2w_dxdy = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Cx = np.cos(mi*np.pi*x/self.plate.a)
+                Cy = np.cos(ni*np.pi*y/self.plate.b)
+                d2w_dxdy += (mi*np.pi/self.plate.a)*(ni*np.pi/self.plate.b)*self.W_mn(mi, ni)*Cx*Cy
+
+        return d2w_dxdy
+
+
+    def d3w_dx2dy(self, x, y):
+        # Returns the third derivative of w wrt x squared and y
+
+        d3w_dx2dy = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Sx = np.sin(mi*np.pi*x/self.plate.a)
+                Cy = np.cos(ni*np.pi*y/self.plate.b)
+                d3w_dx2dy += -(mi*np.pi/self.plate.a)**2*(ni*np.pi/self.plate.b)*self.W_mn(mi, ni)*Sx*Cy
+
+        return d3w_dx2dy
+
+
+    def d3w_dxdy2(self, x, y):
+        # Returns the third derivative of w wrt x and y squared
+
+        d3w_dxdy2 = 0.0
+        for mi in self.load.m[:self.m_max]:
+            for ni in self.load.n[:self.n_max]:
+                Cx = np.cos(mi*np.pi*x/self.plate.a)
+                Sy = np.sin(ni*np.pi*y/self.plate.b)
+                d3w_dxdy2 += -(mi*np.pi/self.plate.a)*(ni*np.pi/self.plate.b)**2*self.W_mn(mi, ni)*Cx*Sy
+
+        return d3w_dxdy2
 
 
 class LevySolver(Solver):
