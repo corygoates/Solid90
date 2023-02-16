@@ -189,7 +189,7 @@ class PatchLoad(Load):
             return 0.0
 
 
-    def P_mn(self, m, n):
+    def Pmn(self, m, n):
         x = 4.0*self.p0/(np.pi**2*m*n*self.c*self.d)
         x *= np.sin(m*np.pi*self.x0/self.plate.a)
         x *= np.sin(n*np.pi*self.y0/self.plate.b)

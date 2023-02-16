@@ -315,9 +315,63 @@ class LevySolver(Solver):
     def coefs(self, m):
         # Returns Am, Bm, Cm, Dm, and km
 
+        # Get k and beta
         km = self.km(m)
+        beta_m = m*np.pi/self.plate.a
 
-        return 0.0, 0.0, 0.0, 0.0, km
+        # Get alpha based on symmetry
+        if self.BC[1] == self.BC[3]:
+            alpha_m = 0.5*beta_m*self.plate.b
+        else:
+            alpha_m = beta_m*self.plate.b
+
+        # Get intermediate calcs
+        Tha = np.tanh(alpha_m)
+        Cha = np.cosh(alpha_m)
+        
+        # Calculate coefs based on boundary conditions
+
+        # All simply-supported
+        if self.BC == "SSSS":
+
+            # Get coefficients
+            Am = 0.0
+            Bm = -km*(2.0*alpha_m*Tha)/(2.0*Cha)
+            Cm = km*beta_m/(2.0*Cha)
+            Dm = 0.0
+
+        # Clamped on y-faces
+        elif self.BC == "SCSC":
+
+            # Get coefficients
+            denom = 1.0/Cha*(Tha + alpha_m*(1.0-Tha**2))
+            Am = 0.0
+            Bm = -km*(alpha_m+Tha)*denom
+            Cm = km*beta_m*Tha*denom
+            Dm = 0.0
+
+        # Clamped at y=0, free at y=b
+        elif self.BC == "SCSF":
+
+            # Get matrix elements
+            a11 = -beta_m*((1.0+self.plate.v)*Tha + alpha_m*(1.0-self.plate.v))
+            a12 = alpha_m*(1.0-self.plate.v)*Tha + 2.0
+            a21 = -beta_m*(2.0 + alpha_m*(self.plate.v-1.0)*Tha)
+            a22 = (1.0+self.plate.v)*Tha + alpha_m*(self.plate.v-1.0)
+            b1 = km*beta_m*(self.plate.v/Cha + 1.0 - self.plate.v)
+            b2 = km*beta_m*(self.plate.v-1.0)*Tha
+
+            # Get solution
+            denom = a12*a21 - a11*a22
+            Am = (b2*a12 - b1*a22)/denom
+            Cm = (b1*a21 - b2*a11)/denom
+            Bm = -km
+            Dm = -beta_m*Am
+
+        else:
+            IOError("{0} is not an allowable BC set for the Levy solution! Quitting...")
+
+        return Am, Bm, Cm, Dm, km
 
     
     def d2w_dx2(self, x, y):

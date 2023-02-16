@@ -71,6 +71,13 @@ def load_input(input_file):
     solver = input_lines[-2].split()[-1]
     BC = input_lines[-1].split()[-1]
 
+    print()
+    print("---Solver---")
+    print("Type: ", solver.title())
+    print("Boundary Conditions: ", BC)
+    print("m_max:", m_max)
+    print("n_max:", n_max)
+
     if solver == "navier":
         if BC != 'SSSS':
             raise IOError("Navier solver cannot be used with BCs other than SSSS! Quitting...")
@@ -88,5 +95,47 @@ if __name__=="__main__":
     # Load input
     input_file = sys.argv[-1]
     solver = load_input(input_file)
+
+    # Print stresses
+    print()
+    print("---Solution---")
+    print("Maximum Plane Stresses")
+    print("At center:")
+    print("    \u03C3x: ", solver.sigma_x(0.5*solver.plate.a, 0.5*solver.plate.b, 0.5*solver.plate.h))
+    print("    \u03C3y: ", solver.sigma_y(0.5*solver.plate.a, 0.5*solver.plate.b, 0.5*solver.plate.h))
+    print("At (0,0):")
+    print("    \u03C4xy: ", solver.tau_xy(0.0, 0.0, 0.5*solver.plate.h))
+    print("At (a,0):")
+    print("    \u03C4xy: ", solver.tau_xy(solver.plate.a, 0.0, 0.5*solver.plate.h))
+    print("At (a,b):")
+    print("    \u03C4xy: ", solver.tau_xy(solver.plate.a, solver.plate.b, 0.5*solver.plate.h))
+    print("At (0,b):")
+    print("    \u03C4xy: ", solver.tau_xy(0.0, solver.plate.b, 0.5*solver.plate.h))
+
+    print("Maximum Transverse Stresses")
+    print("At (0,0):")
+    print("    \u03C4xz: ", solver.tau_xz(0.0, 0.0, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(0.0, 0.0, 0.0))
+    print("At (a/2,0):")
+    print("    \u03C4xz: ", solver.tau_xz(0.5*solver.plate.a, 0.0, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(0.5*solver.plate.a, 0.0, 0.0))
+    print("At (a,0):")
+    print("    \u03C4xz: ", solver.tau_xz(solver.plate.a, 0.0, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(solver.plate.a, 0.0, 0.0))
+    print("At (a,b/2):")
+    print("    \u03C4xz: ", solver.tau_xz(solver.plate.a, 0.5*solver.plate.b, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(solver.plate.a, 0.5*solver.plate.b, 0.0))
+    print("At (a,b):")
+    print("    \u03C4xz: ", solver.tau_xz(solver.plate.a, solver.plate.b, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(solver.plate.a, solver.plate.b, 0.0))
+    print("At (a/2,b):")
+    print("    \u03C4xz: ", solver.tau_xz(0.5*solver.plate.a, solver.plate.b, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(0.5*solver.plate.a, solver.plate.b, 0.0))
+    print("At (0,b):")
+    print("    \u03C4xz: ", solver.tau_xz(0.0, solver.plate.b, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(0.0, solver.plate.b, 0.0))
+    print("At (0,b/2):")
+    print("    \u03C4xz: ", solver.tau_xz(0.0, 0.5*solver.plate.b, 0.0))
+    print("    \u03C4yz: ", solver.tau_yz(0.0, 0.5*solver.plate.b, 0.0))
 
     solver.plot_deflection_field()
