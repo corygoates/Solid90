@@ -68,6 +68,10 @@ class UniformLoad(Load):
         return 4.0*self.p0/(np.pi*m)
 
 
+    def F_total(self):
+        return self.p0*self.plate.a*self.plate.b
+
+
 class SinusoidalLoad(Load):
     """Class for a sinusoidal load.
     
@@ -99,6 +103,10 @@ class SinusoidalLoad(Load):
             return 0.0
 
 
+    def F_total(self):
+        return 4.0*self.p0*self.plate.a*self.plate.b
+
+
 class HydrostaticLoad(Load):
     """Class for a hydrostatic load.
     
@@ -120,7 +128,7 @@ class HydrostaticLoad(Load):
 
 
     def p(self, x, y):
-        return self.p0*x/self.plate.b
+        return self.p0*x/self.plate.a
 
 
     def Pmn(self, m, n):
@@ -129,6 +137,10 @@ class HydrostaticLoad(Load):
 
     def Pm(self, m):
         return 2.0*self.p0/(np.pi*m)*(-1)**(m+1)
+
+
+    def F_total(self):
+        return 0.5*self.p0*self.plate.a*self.plate.b
 
 
 class PatchLoad(Load):
@@ -184,3 +196,7 @@ class PatchLoad(Load):
         x *= np.sin(m*np.pi*self.c/self.plate.a)
         x *= np.sin(n*np.pi*self.d/self.plate.b)
         return x
+
+
+    def F_total(self):
+        return 4.0*self.c*self.d*self.p0

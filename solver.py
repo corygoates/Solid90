@@ -295,11 +295,12 @@ class LevySolver(Solver):
         for m in range(self.m_max):
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
-            Shy = np.sinh(m*np.pi*y/self.plate.a)
-            Chy = np.cosh(m*np.pi*y/self.plate.a)
-            yShy = y*np.sinh(m*np.pi*y/self.plate.a)
-            yChy = y*np.cosh(m*np.pi*y/self.plate.a)
-            Sx = np.sin(m*np.pi*x/self.plate.a)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Sx = np.sin(beta_m*x)
             w += (Am*Shy + Bm*Chy + Cm*yShy + Dm*yChy + km)*Sx
 
         return w
@@ -317,3 +318,117 @@ class LevySolver(Solver):
         km = self.km(m)
 
         return 0.0, 0.0, 0.0, 0.0, km
+
+    
+    def d2w_dx2(self, x, y):
+        # Returns the second derivative of w wrt x at the given location
+
+        d2w_dx2 = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Sx = np.sin(beta_m*x)
+
+            d2w_dx2 -= (Am*Shy + Bm*Chy + Cm*yShy + Dm*yChy + km)*beta_m**2*Sx
+
+        return d2w_dx2
+
+    
+    def d3w_dx3(self, x, y):
+        # Returns the third derivative of w wrt x at the given location
+
+        d3w_dx3 = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Cx = np.cos(beta_m*x)
+
+            d3w_dx3 -= (Am*Shy + Bm*Chy + Cm*yShy + Dm*yChy + km)*beta_m**3*Cx
+
+        return d3w_dx3
+
+
+    def d2w_dy2(self, x, y):
+        # Returns the second derivative of w wrt y at the given location
+
+        d2w_dy2 = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Sx = np.sin(beta_m*x)
+
+            d2w_dy2 += (Am*beta_m**2*Shy + Bm*beta_m**2*Chy + Cm*(2.0*beta_m*Chy + beta_m**2*yShy) + Dm*(2.0*beta_m*Shy + beta_m**2*yChy))*Sx
+
+        return d2w_dy2
+
+
+    def d3w_dy3(self, x, y):
+        # Returns the third derivative of w wrt y at the given location
+
+        d3w_dy3 = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Sx = np.sin(beta_m*x)
+
+            d3w_dy3 += (Am*beta_m**3*Chy + Bm*beta_m**3*Shy + Cm*(3.0*beta_m*Shy + beta_m**3*yChy) + Dm*(3.0*beta_m*Chy + beta_m**3*yShy))*Sx
+
+        return d3w_dy3
+
+
+    def d3w_dx2dy(self, x, y):
+        # Returns the third derivative of w wrt x squared and y at the given location
+
+        d3w_dx2dy = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Sx = np.sin(beta_m*x)
+
+            d3w_dx2dy -= (Am*beta_m*Chy + Bm*beta_m*Shy + Cm*(Shy + beta_m*yChy) + Dm*(Chy + beta_m*yShy))*beta_m**2*Sx
+
+        return d3w_dx2dy
+
+
+    def d3w_dxdy2(self, x, y):
+        # Returns the third derivative of w wrt x and y squared at the given location
+
+        d3w_dxdy2 = 0.0
+        for m in range(self.m_max):
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Cx = np.cos(beta_m*x)
+
+            d3w_dxdy2 += (Am*beta_m**2*Shy + Bm*beta_m**2*Chy + Cm*(2.0*beta_m*Chy+beta_m**2*yShy) + Dm*(2.0*beta_m*Shy + beta_m**2*yChy))*beta_m*Cx
+
+        return d3w_dxdy2

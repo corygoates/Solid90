@@ -19,9 +19,19 @@ def load_input(input_file):
     b = float(input_lines[1].split()[-1])
     h = float(input_lines[2].split()[-1])
 
+    print()
+    print("---Plate Dimensions---")
+    print("a:", a)
+    print("b:", b)
+    print("h:", h)
+
     # Material properties
     E = float(input_lines[3].split()[-1])
     v = float(input_lines[4].split()[-1])
+    print()
+    print("---Material Properties---")
+    print("E:", E)
+    print("v:", v)
 
     # Initialize plate
     plate = Plate(a=a, b=b, h=h, E=E, v=v)
@@ -35,18 +45,25 @@ def load_input(input_file):
     # Load
     load_type = int(input_lines[7].split()[-1])
     p0 = float(input_lines[8].split()[-1])
+    print()
+    print("---Load---")
     if load_type == 0:
         load = UniformLoad(p0=p0, plate=plate)
+        print("Type: uniform")
     elif load_type == 1:
         load = SinusoidalLoad(p0=p0, plate=plate)
+        print("Type: sinusoidal")
     elif load_type == 2:
         load = HydrostaticLoad(p0=p0, plate=plate)
+        print("Type: hydrostatic")
     elif load_type == 3:
         c = float(input_lines[9].split()[-1])
         d = float(input_lines[10].split()[-1])
         x = float(input_lines[11].split()[-1])
         y = float(input_lines[12].split()[-1])
         load = PatchLoad(p0=p0, c=c, d=d, x=x, y=y)
+        print("Type: patch")
+    print("P0:", p0)
 
     # Solver parameters
     m_max = int(input_lines[-4].split()[-1])
