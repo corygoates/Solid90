@@ -64,7 +64,7 @@ def load_input(input_file):
         y = float(input_lines[12].split()[-1])
         load = PatchLoad(p0=p0, c=c, d=d, x=x, y=y)
         print("Type: patch")
-    print("P0:", p0)
+    print("P0: ", p0)
 
     # Solver parameters
     m_max = int(input_lines[-4].split()[-1])
@@ -76,8 +76,8 @@ def load_input(input_file):
     print("---Solver---")
     print("Type: ", solver.title())
     print("Boundary Conditions: ", BC)
-    print("m_max:", m_max)
-    print("n_max:", n_max)
+    print("m_max: ", m_max)
+    print("n_max: ", n_max)
 
     if solver == "navier":
         if BC != 'SSSS':
@@ -87,6 +87,7 @@ def load_input(input_file):
         if BC[0] != 'S' or BC[2] != 'S':
             raise IOError("Levy solver must have 'S' BCs on x-faces! Quitting...")
         solver = LevySolver(plate, load, BC, m_max)
+        print("Symmetric: ", solver.symmetric)
 
     return solver
 
