@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 from plate import Plate
@@ -349,10 +350,10 @@ class LevySolver(Solver):
         elif self.BC == "SCSC":
 
             # Get coefficients
-            denom = 1.0/Cha*(Tha + alpha_m*(1.0-Tha**2))
+            denom = Cha*(Tha + alpha_m*(1.0-Tha**2))
             Am = 0.0
-            Bm = -km*(alpha_m+Tha)*denom
-            Cm = km*beta_m*Tha*denom
+            Bm = -km*(alpha_m+Tha)/denom
+            Cm = km*beta_m*Tha/denom
             Dm = 0.0
 
         # Clamped at y=0, free at y=b
@@ -369,12 +370,12 @@ class LevySolver(Solver):
             # Get solution
             denom = a12*a21 - a11*a22
             Am = (b2*a12 - b1*a22)/denom
-            Cm = (b1*a21 - b2*a11)/denom
             Bm = -km
+            Cm = (b1*a21 - b2*a11)/denom
             Dm = -beta_m*Am
 
         else:
-            IOError("{0} is not an allowable BC set for the Levy solution! Quitting...")
+            IOError("{0} is not an allowable BC set for the Levy solution! Quitting...".format(self.BC))
 
         return Am, Bm, Cm, Dm, km
 

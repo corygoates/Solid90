@@ -77,12 +77,12 @@ def load_input(input_file):
     print("Type: ", solver.title())
     print("Boundary Conditions: ", BC)
     print("m_max: ", m_max)
-    print("n_max: ", n_max)
 
     if solver == "navier":
         if BC != 'SSSS':
             raise IOError("Navier solver cannot be used with BCs other than SSSS! Quitting...")
         solver = NavierSolver(plate, load, m_max, n_max)
+        print("n_max: ", n_max)
     else:
         if BC[0] != 'S' or BC[2] != 'S':
             raise IOError("Levy solver must have 'S' BCs on x-faces! Quitting...")

@@ -52,8 +52,8 @@ class UniformLoad(Load):
         super().__init__(**kwargs)
 
         # Initialize Fourier coeff calcs
-        self.m = np.array(range(1, 99, 2))
-        self.n = np.array(range(1, 99, 2))
+        self.m = np.array(range(1, 999, 2))
+        self.n = np.array(range(1, 999, 2))
 
 
     def p(self, x, y):
@@ -123,8 +123,8 @@ class HydrostaticLoad(Load):
         super().__init__(**kwargs)
 
         # Initialize Fourier coefficient calcs
-        self.m = np.array(range(1, 50))
-        self.n = np.array(range(1, 99, 2))
+        self.m = np.array(range(1, 500))
+        self.n = np.array(range(1, 999, 2))
 
 
     def p(self, x, y):
