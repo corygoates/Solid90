@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.optimize as sopt
 
 from plate import Plate
 from loads import *
@@ -130,6 +131,54 @@ class Solver:
     def corner_reactions(self):
         # Returns the corner reaction forces
         pass
+
+
+    def get_maximum_w(self):
+        # Returns the location of the maximum deflection and its value
+
+        def f(x):
+            return -self.w(x[0], x[1])
+
+        # Run optimizer
+        result = sopt.minimize(f, [0.501*self.plate.a, 0.501*self.plate.b], method='nelder-mead', bounds=((0.0, self.plate.a), (0.0, self.plate.b)))
+
+        return result.x[0], result.x[1], -result.fun
+
+
+    def _get_max_stress(self, stress_fun, x0):
+        # Returns the location of the maximum of the given stress function and its value
+
+        def f(x):
+            return -abs(stress_fun(x[0], x[1], x[2]))
+
+        # Run optimizer
+        result = sopt.minimize(f, x0, method='nelder-mead', bounds=((0.0, self.plate.a), (0.0, self.plate.b), (-0.5*self.plate.h, 0.5*self.plate.h)))
+
+        return result.x[0], result.x[1], result.x[2], stress_fun(result.x[0], result.x[1], result.x[2])
+
+
+    def get_maximum_sigma_x(self):
+        # Returns the location of the maximum sigma_x and its value
+
+        return self._get_max_stress(self.sigma_x, [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h])
+
+
+    def get_maximum_sigma_y(self):
+        # Returns the location of the maximum sigma_y and its value
+
+        return self._get_max_stress(self.sigma_y, [0.99*self.plate.a, 0.01*self.plate.b, 0.5*self.plate.h])
+
+
+    def get_maximum_tau_xz(self):
+        # Returns the location of the maximum tau_xz and its value
+
+        return self._get_max_stress(self.tau_xz, [0.9*self.plate.a, 0.9*self.plate.b, 0.0])
+
+
+    def get_maximum_tau_yz(self):
+        # Returns the location of the maximum tau_yz and its value
+
+        return self._get_max_stress(self.tau_yz, [0.9*self.plate.a, 0.9*self.plate.b, 0.0])
 
 
 class NavierSolver(Solver):
