@@ -114,7 +114,7 @@ class Solver:
         # Returns the transverse shear stress (from equilibrium) at the given location
 
         P = self.d3w_dx3(x, y) + self.d3w_dxdy2(x,y)
-        Z = 0.25**self.plate.h**2 - z**2
+        Z = 0.25*self.plate.h**2 - z**2
         return self.plate.E*Z*P/(2.0*(1.0-self.plate.v**2))
 
 
@@ -122,7 +122,7 @@ class Solver:
         # Returns the transverse shear stress (from equilibrium) at the given location
 
         P = self.d3w_dx2dy(x, y) + self.d3w_dy3(x,y)
-        Z = 0.25**self.plate.h**2 - z**2
+        Z = 0.25*self.plate.h**2 - z**2
         return self.plate.E*Z*P/(2.0*(1.0-self.plate.v**2))
 
 
