@@ -154,31 +154,70 @@ class Solver:
         # Run optimizer
         result = sopt.minimize(f, x0, method='nelder-mead', bounds=((0.0, self.plate.a), (0.0, self.plate.b), (-0.5*self.plate.h, 0.5*self.plate.h)))
 
+        # Refine
+        #result = sopt.minimize(f, result.x, method='L-BFGS-B', bounds=((0.0, self.plate.a), (0.0, self.plate.b), (-0.5*self.plate.h, 0.5*self.plate.h)))
+
         return result.x[0], result.x[1], result.x[2], stress_fun(result.x[0], result.x[1], result.x[2])
 
 
     def get_maximum_sigma_x(self):
         # Returns the location of the maximum sigma_x and its value
 
-        return self._get_max_stress(self.sigma_x, [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h])
+        if isinstance(self, NavierSolver):
+            x0 = [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h]
+        elif self.BC == "SSSS":
+            x0 = [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h]
+        elif self.BC == "SCSC":
+            x0 = [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h]
+        elif self.BC == "SCSF":
+            x0 = [0.5*self.plate.a, 0.9*self.plate.b, 0.5*self.plate.h]
+
+        return self._get_max_stress(self.sigma_x, x0)
 
 
     def get_maximum_sigma_y(self):
         # Returns the location of the maximum sigma_y and its value
 
-        return self._get_max_stress(self.sigma_y, [0.99*self.plate.a, 0.01*self.plate.b, 0.5*self.plate.h])
+        if isinstance(self, NavierSolver):
+            x0 = [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h]
+        elif self.BC == "SSSS":
+            x0 = [0.5*self.plate.a, 0.5*self.plate.b, 0.5*self.plate.h]
+        elif self.BC == "SCSC":
+            x0 = [0.99*self.plate.a, 0.01*self.plate.b, 0.5*self.plate.h]
+        elif self.BC == "SCSF":
+            x0 = [0.99*self.plate.a, 0.01*self.plate.b, 0.5*self.plate.h]
+
+        return self._get_max_stress(self.sigma_y, x0)
 
 
     def get_maximum_tau_xz(self):
         # Returns the location of the maximum tau_xz and its value
 
-        return self._get_max_stress(self.tau_xz, [0.9*self.plate.a, 0.9*self.plate.b, 0.0])
+        if isinstance(self, NavierSolver):
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+        elif self.BC == "SSSS":
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+        elif self.BC == "SCSC":
+            x0 = [0.9*self.plate.a, 0.9*self.plate.b, 0.0]
+        elif self.BC == "SCSF":
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+
+        return self._get_max_stress(self.tau_xz, x0)
 
 
     def get_maximum_tau_yz(self):
         # Returns the location of the maximum tau_yz and its value
 
-        return self._get_max_stress(self.tau_yz, [0.9*self.plate.a, 0.9*self.plate.b, 0.0])
+        if isinstance(self, NavierSolver):
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+        elif self.BC == "SSSS":
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+        elif self.BC == "SCSC":
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+        elif self.BC == "SCSF":
+            x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
+
+        return self._get_max_stress(self.tau_yz, x0)
 
 
 class NavierSolver(Solver):

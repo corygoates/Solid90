@@ -96,7 +96,7 @@ class SinusoidalLoad(Load):
         return self.p0*np.sin(np.pi*x/self.plate.a)*np.sin(np.pi*y/self.plate.b)
 
 
-    def P_mn(self, m, n):
+    def Pmn(self, m, n):
         if m == 1 and n == 1:
             return self.p0
         else:
