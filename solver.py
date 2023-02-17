@@ -36,8 +36,6 @@ class Solver:
         # Returns the deflections across the plate
 
         # Get deflections at various points
-        Nx = 50
-        Ny = 50
         X = np.linspace(0.0, self.plate.a, Nx)
         Y = np.linspace(0.0, self.plate.b, Ny)
         w = np.zeros((Nx, Ny))
@@ -52,9 +50,12 @@ class Solver:
 
         # Plot deflection
         fig, ax = plt.subplots()
-        contour_plot = ax.contourf(X, Y, value, 100)
+        contour_plot = ax.contourf(X, Y, value.T, 100)
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
+        ax.xaxis.tick_top()
+        ax.xaxis.set_label_position('top')
+        ax.set_aspect('equal')
         ax.invert_yaxis()
         cbar = fig.colorbar(contour_plot)
         cbar.ax.set_title(label)
@@ -286,13 +287,17 @@ class LevySolver(Solver):
         super().__init__(plate, load, m_max)
 
         self.BC = BC
+        self.symmetric = self.BC[1] == self.BC[3]
 
 
     def w(self, x, y):
         # Returns the deflection at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         w = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a
@@ -309,7 +314,7 @@ class LevySolver(Solver):
     def km(self, m):
         # Returns the km coefficient
 
-        return self.load.Pm(m)/self.plate.D*(m*np.pi/self.plate.a)**4
+        return self.load.Pm(m)*(self.plate.a/(m*np.pi))**4/self.plate.D
     
 
     def coefs(self, m):
@@ -320,7 +325,7 @@ class LevySolver(Solver):
         beta_m = m*np.pi/self.plate.a
 
         # Get alpha based on symmetry
-        if self.BC[1] == self.BC[3]:
+        if self.symmetric:
             alpha_m = 0.5*beta_m*self.plate.b
         else:
             alpha_m = beta_m*self.plate.b
@@ -336,7 +341,7 @@ class LevySolver(Solver):
 
             # Get coefficients
             Am = 0.0
-            Bm = -km*(2.0*alpha_m*Tha)/(2.0*Cha)
+            Bm = -km*(2.0+alpha_m*Tha)/(2.0*Cha)
             Cm = km*beta_m/(2.0*Cha)
             Dm = 0.0
 
@@ -377,8 +382,11 @@ class LevySolver(Solver):
     def d2w_dx2(self, x, y):
         # Returns the second derivative of w wrt x at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         d2w_dx2 = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a
@@ -396,8 +404,11 @@ class LevySolver(Solver):
     def d3w_dx3(self, x, y):
         # Returns the third derivative of w wrt x at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         d3w_dx3 = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a
@@ -411,12 +422,37 @@ class LevySolver(Solver):
 
         return d3w_dx3
 
+    
+    def d2w_dxdy(self, x, y):
+        # Returns the second derivative of w wrt x and y at the given location
+
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
+        d2w_dxdy = 0.0
+        for m in self.load.m[:self.m_max]:
+
+            Am, Bm, Cm, Dm, km = self.coefs(m)
+            beta_m = m*np.pi/self.plate.a
+            Shy = np.sinh(beta_m*y)
+            Chy = np.cosh(beta_m*y)
+            yShy = y*np.sinh(beta_m*y)
+            yChy = y*np.cosh(beta_m*y)
+            Cx = np.cos(beta_m*x)
+
+            d2w_dxdy += (Am*beta_m*Chy + Bm*beta_m*Shy + Cm*(Shy + beta_m*yChy) + Dm*(Chy + beta_m*yShy))*beta_m*Cx
+
+        return d2w_dxdy
+
 
     def d2w_dy2(self, x, y):
         # Returns the second derivative of w wrt y at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         d2w_dy2 = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a
@@ -434,8 +470,11 @@ class LevySolver(Solver):
     def d3w_dy3(self, x, y):
         # Returns the third derivative of w wrt y at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         d3w_dy3 = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a
@@ -445,7 +484,7 @@ class LevySolver(Solver):
             yChy = y*np.cosh(beta_m*y)
             Sx = np.sin(beta_m*x)
 
-            d3w_dy3 += (Am*beta_m**3*Chy + Bm*beta_m**3*Shy + Cm*(3.0*beta_m*Shy + beta_m**3*yChy) + Dm*(3.0*beta_m*Chy + beta_m**3*yShy))*Sx
+            d3w_dy3 += (Am*beta_m**3*Chy + Bm*beta_m**3*Shy + Cm*(3.0*beta_m**2*Shy + beta_m**3*yChy) + Dm*(3.0*beta_m**2*Chy + beta_m**3*yShy))*Sx
 
         return d3w_dy3
 
@@ -453,8 +492,11 @@ class LevySolver(Solver):
     def d3w_dx2dy(self, x, y):
         # Returns the third derivative of w wrt x squared and y at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         d3w_dx2dy = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a
@@ -472,8 +514,11 @@ class LevySolver(Solver):
     def d3w_dxdy2(self, x, y):
         # Returns the third derivative of w wrt x and y squared at the given location
 
+        if self.symmetric:
+            y -= 0.5*self.plate.b
+
         d3w_dxdy2 = 0.0
-        for m in range(self.m_max):
+        for m in self.load.m[:self.m_max]:
 
             Am, Bm, Cm, Dm, km = self.coefs(m)
             beta_m = m*np.pi/self.plate.a

@@ -35,6 +35,7 @@ def load_input(input_file):
 
     # Initialize plate
     plate = Plate(a=a, b=b, h=h, E=E, v=v)
+    print("D:", plate.D)
 
     # Locations of interest
     x0 = input_lines[5].split('=')[-1].strip()[1:-1]
