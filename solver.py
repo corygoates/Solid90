@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize as sopt
+import scipy.integrate as sint
 
 from plate import Plate
 from loads import *
@@ -129,8 +130,20 @@ class Solver:
 
 
     def corner_reactions(self):
-        # Returns the corner reaction forces
-        pass
+        # Returns the average corner reaction force
+
+        # Integrate edge forces
+        def V_x(y):
+            return self.V_x(0.0, y)
+        F_x_edge = sint.quadrature(V_x, 0.0, self.plate.b)[0]
+        def V_y(x):
+            return self.V_y(x, 0.0)
+        F_y_edge = sint.quadrature(V_y, 0.0, self.plate.a)[0]
+
+        # Add
+        F_edges = -2.0*(F_x_edge + F_y_edge)
+
+        return -0.25*(F_edges + self.load.F_total())
 
 
     def get_maximum_w(self):
@@ -218,6 +231,20 @@ class Solver:
             x0 = [0.9*self.plate.a, 0.1*self.plate.b, 0.0]
 
         return self._get_max_stress(self.tau_yz, x0)
+
+
+    def V_x(self, x, y):
+        # Gives the x shear force at the given location
+
+        P = self.d3w_dx3(x, y) + (2.0-self.plate.v)*self.d3w_dxdy2(x, y)
+        return -self.plate.D*P
+
+
+    def V_y(self, x, y):
+        # Gives the y shear force at the given location
+
+        P = self.d3w_dy3(x, y) + (2.0-self.plate.v)*self.d3w_dx2dy(x, y)
+        return -self.plate.D*P
 
 
 class NavierSolver(Solver):
@@ -456,7 +483,7 @@ class LevySolver(Solver):
             b2 = km*beta_m*(self.plate.v-1.0)*Tha
 
             # Get solution
-            denom = a12*a21 - a11*a22
+            denom = (a12*a21 - a11*a22)
             Am = (b2*a12 - b1*a22)/denom
             Bm = -km
             Cm = (b1*a21 - b2*a11)/denom
