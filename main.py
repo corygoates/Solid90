@@ -65,7 +65,7 @@ def load_input(input_file):
         d = float(input_lines[10].split()[-1])
         x = float(input_lines[11].split()[-1])
         y = float(input_lines[12].split()[-1])
-        load = PatchLoad(p0=p0, c=c, d=d, x=x, y=y)
+        load = PatchLoad(p0=p0, c=c, d=d, x=x, y=y, plate=plate)
         print("Type: patch")
     print("P0: ", p0)
 
