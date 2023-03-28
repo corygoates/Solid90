@@ -97,6 +97,10 @@ class OrthotropicPlate:
 
             return 2.0*(1.0 - Ch*C) + (l1/l2 - l2/l1)*Sh*S
 
+        elif self.BC == 'SCSS':
+
+            return l1*Ch*S - l2*Sh*C
+
     
     def low_freq_characteristic(self, w, m):
         # Returns the result of the low-frequency characteristic equation
