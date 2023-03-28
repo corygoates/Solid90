@@ -152,15 +152,18 @@ class OrthotropicPlate:
         ws = np.zeros(N_freq)
 
         # Find first natural frequency
-        mult = 1.0
-        while True:
-            mult *= 1.1
-            try:
-                ws[0] = self.find_high_natural_freq_w_secant(w_trans*mult, m, w_min=w_trans)
-            except RuntimeError:
-                continue
-            else:
-                break
+
+        # Find where we change sign
+        f1 = self.high_freq_characteristic(w_trans, m)
+        w2 = w_trans+1.0
+        f2 = self.high_freq_characteristic(w2, m)
+        while np.sign(f1) == np.sign(f2):
+            f1 = f2
+            w2 += 1.0
+            f2 = self.high_freq_characteristic(w2, m)
+
+        # Refine with secant
+        ws[0] = self.find_high_natural_freq_w_secant(w2, m, w_min=w_trans)
 
         # Find the rest
         for i in range(1, N_freq):
@@ -275,9 +278,9 @@ class OrthotropicPlate:
         W /= np.max(np.max(np.abs(W))).item()
 
         # Plot
-        ax = plt.figure().add_subplot(projection='3d')
+        ax = plt.figure(figsize=(6.5, 6.5)).add_subplot(projection='3d')
         ax.plot_surface(X, Y, W, cmap='coolwarm')
-        ax.set(xlabel='x', ylabel='y', zlabel='w', zlim=(2.0, -2.0), xlim=(self.a, 0.0))
+        ax.set(xlabel='$x$', ylabel='$y$', zlabel='$w$', zlim=(3.0, -3.0), xlim=(self.a, 0.0), title=self.BC+ ', Mode: ({0},{1}),'.format(m, n) + ' $\omega = '+str(round(w, 3))+'$ rad/s')
         plt.show()
 
 
