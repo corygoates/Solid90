@@ -17,3 +17,6 @@ if __name__=="__main__":
         print("w1s: ", w1s)
         w2s = plate.get_natural_freqs(2, 5)
         print("w2s: ", w2s)
+
+        # Plot mode shapes
+        plate.plot_mode_shape(1, 1)

@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 
 
 class Plate:
@@ -87,8 +89,8 @@ class OrthotropicPlate:
         elif self.BC == 'SSSF':
 
             F11 = l1_2 - self.D12/self.D22*alpha_m**2
-            F21 = l1_2 - self.D_bar/self.D22*alpha_m**2
             F12 = l2_2 + self.D12/self.D22*alpha_m**2
+            F21 = l1_2 - self.D_bar/self.D22*alpha_m**2
             F22 = l2_2 + self.D_bar/self.D22*alpha_m**2
 
             return l2*F11*F22*Sh*C - l1*F21*F12*Ch*S
@@ -210,6 +212,73 @@ class OrthotropicPlate:
             raise RuntimeError("Secant method did not converge.")
 
         return w1
+
+
+    def get_mode_coefficients(self, m, n):
+        # Returns the coefficients for the given mode shape
+
+        # Find the natural frequency for this mode
+        ws = self.get_natural_freqs(m, n)
+        w = ws[n-1]
+
+        # Get roots
+        alpha_m = self.get_alpha_m(m)
+        l1_2 = self.lambda_1_squared(w, m)
+        l2_2 = self.lambda_2_squared(w, m)
+        l1 = np.sqrt(l1_2)
+        l2 = np.sqrt(l2_2)
+
+        if self.BC == 'SSSS':
+            A = 0.0
+            B = 0.0
+            C = 0.0
+            D = 1.0
+
+        elif self.BC == 'SSSF':
+            F11 = l1_2 - self.D12/self.D22*alpha_m**2
+            F12 = l2_2 + self.D12/self.D22*alpha_m**2
+            A = 0.0
+            B = F12*np.sin(l2*self.b)
+            C = 0.0
+            D = F11*np.sinh(l1*self.b)
+
+        elif self.BC == 'SCSC':
+            K11 = np.cosh(l1*self.b) - np.cos(l2*self.b)
+            K12 = np.sinh(l1*self.b) - l1/l2*np.sin(l2*self.b)
+            A = K12
+            B = -K11
+            C = -K12
+            D = K11*l1/l2
+
+        elif self.BC == 'SCSS':
+            A = 0.0
+            B = np.sin(l2*self.b)
+            C = 0.0
+            D = -np.sinh(l1*self.b)
+
+        return A, B, C, D, w, l1, l2
+
+
+    def plot_mode_shape(self, m, n):
+        """Plots the given mode shape for the plate."""
+
+        # Get range of x and y
+        x = np.linspace(0.0, self.a, 20*m)
+        y = np.linspace(0.0, self.b, 20*n)
+
+        # Get coefficients
+        A, B, C, D, w, l1, l2 = self.get_mode_coefficients(m, n)
+
+        # Determine displacements
+        X, Y = np.meshgrid(x, y)
+        W = (A*np.cosh(l1*Y) + B*np.sinh(l1*Y) + C*np.cos(l2*Y) + D*np.sin(l2*Y))*np.sin(m*np.pi*X/self.a)
+        W /= np.max(np.max(np.abs(W))).item()
+
+        # Plot
+        ax = plt.figure().add_subplot(projection='3d')
+        ax.plot_surface(X, Y, W, cmap='coolwarm')
+        ax.set(xlabel='x', ylabel='y', zlabel='w', zlim=(2.0, -2.0), xlim=(self.a, 0.0))
+        plt.show()
 
 
 class ZeroNinetyZeroPlate(OrthotropicPlate):
