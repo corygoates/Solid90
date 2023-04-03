@@ -6,12 +6,14 @@ from plate import ZeroNinetyZeroPlate
 if __name__=="__main__":
 
     # Loop through boundary conditions
+    w1s = []
+    w2s = []
     for BC in ['SSSS', 'SSSF', 'SCSC', 'SCSS']:
 
         # initialize plate
-        plate = ZeroNinetyZeroPlate(a=2.0, b=1.0, E1=155.0e9, E2=12.1e9, v12=0.248, G12=4.4e9, tl=1.5e-3, rho=7860.0, BC=BC)
+        plate = ZeroNinetyZeroPlate(a=1.0, b=2.0, E1=155.0e9, E2=12.1e9, v12=0.248, G12=4.4e9, tl=1.5e-3, rho=2000.0, BC=BC)
 
-        if BC == 'SCSC':
+        if False:#BC == 'SCSC':
             m = 1
             w_trans = plate.get_freq_transition_point(m)
             W = np.logspace(np.log10(w_trans), 3, 1000)
@@ -22,12 +24,17 @@ if __name__=="__main__":
             plt.show()
 
         # Get natural frequencies
-        print()
-        print("--- BC: {0} ---".format(BC))
-        w1s = plate.get_natural_freqs(1, 5)
-        print("w1s: ", w1s)
-        w2s = plate.get_natural_freqs(2, 5)
-        print("w2s: ", w2s)
+        w1s.append(plate.get_natural_freqs(1, 5))
+        w2s.append(plate.get_natural_freqs(2, 5))
 
         # Plot mode shapes
-        plate.plot_mode_shape(1, 1)
+        plate.plot_mode_shape(2, 1)
+
+    w1s = np.array(w1s)
+    w2s = np.array(w2s)
+
+    for i in range(3):
+        print(w1s[:,i].flatten())
+
+    for i in range(3):
+        print(w2s[:,i].flatten())

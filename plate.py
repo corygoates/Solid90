@@ -155,11 +155,11 @@ class OrthotropicPlate:
 
         # Find where we change sign
         f1 = self.high_freq_characteristic(w_trans, m)
-        w2 = w_trans+1.0
+        w2 = w_trans + 0.1
         f2 = self.high_freq_characteristic(w2, m)
         while np.sign(f1) == np.sign(f2):
             f1 = f2
-            w2 += 1.0
+            w2 += 0.1
             f2 = self.high_freq_characteristic(w2, m)
 
         # Refine with secant
@@ -186,9 +186,6 @@ class OrthotropicPlate:
     def find_high_natural_freq_w_secant(self, w0, m, w_min=0.0, i_max=1000):
         # Uses the secant method to find a high natural frequency close to w0 for the given m
 
-        # Get transition frequency
-        w_trans = self.get_freq_transition_point(m)
-
         # Initialize secant method
         f0 = self.high_freq_characteristic(w0, m)
         w1 = w0*1.1
@@ -203,7 +200,7 @@ class OrthotropicPlate:
             # Get new root location
             w2 = w1 - f1*(w1-w0)/(f1-f0)
             if w2 < w_min:
-                w2 = w_min + w_trans + np.random.random(1).item()
+                w2 = w_min + np.random.random(1).item()
 
             # Update for next iteration
             f0 = f1
