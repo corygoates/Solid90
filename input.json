@@ -1,0 +1,16 @@
+{
+    "plate" : {
+        "geometry" : {
+
+        },
+        "material" : {
+
+        },
+        "boundary_conditions" : {
+
+        }
+    },
+    "analysis" : {
+
+    }
+}
