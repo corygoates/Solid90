@@ -38,6 +38,14 @@ module element_mod
             procedure :: d_psi_d_x => element_d_psi_d_x
             procedure :: d_psi_d_y => element_d_psi_d_y
             procedure :: get_K11_ij => element_get_K11_ij
+            procedure :: get_K12_ij => element_get_K12_ij
+            procedure :: get_K13_ij => element_get_K13_ij
+            procedure :: get_K21_ij => element_get_K21_ij
+            procedure :: get_K22_ij => element_get_K22_ij
+            procedure :: get_K23_ij => element_get_K23_ij
+            procedure :: get_K31_ij => element_get_K31_ij
+            procedure :: get_K32_ij => element_get_K32_ij
+            procedure :: get_K33_ij => element_get_K33_ij
 
     end type element
     
@@ -311,7 +319,7 @@ contains
         real :: K11
 
         ! Integrate
-        K11 = gauss_quad_2D(integrand, 3)
+        K11 = gauss_quad_2D(integrand, 2)
 
         contains
 
@@ -328,9 +336,227 @@ contains
                     + A44*this%d_psi_d_y(xi, eta, j)*this%d_psi_d_y(xi, eta, i))*this%det_J
 
             end function integrand
-    
         
     end function element_get_K11_ij
 
+
+    function element_get_K12_ij(this, i, j, A55) result(K12)
+        ! Returns the K12 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: A55
+
+        real :: K12
+
+        ! Integrate
+        K12 = gauss_quad_2D(integrand, 3)
+
+        contains
+
+            function integrand(xi, eta) result(int)
+                ! Integrand of the K12 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = A55*this%master%psi(xi, eta, j)*this%d_psi_d_x(xi, eta, i)*this%det_J
+
+            end function integrand
     
+    end function element_get_K12_ij
+
+
+    function element_get_K13_ij(this, i, j, A44) result(K13)
+        ! Returns the K13 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: A44
+
+        real :: K13
+
+        ! Integrate
+        K13 = gauss_quad_2D(integrand, 3)
+
+        contains
+
+            function integrand(xi, eta) result(int)
+                ! Integrand of the K13 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = A44*this%master%psi(xi, eta, j)*this%d_psi_d_y(xi, eta, i)*this%det_J
+
+            end function integrand
+    
+        
+    end function element_get_K13_ij
+
+
+    function element_get_K21_ij(this, i, j, A55) result(K21)
+        ! Returns the K21 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: A55
+
+        real :: K21
+
+        ! Cheat
+        K21 = this%get_K12_ij(j, i, A55)
+    
+    end function element_get_K21_ij
+
+
+    function element_get_K22_ij(this, i, j, A55, D11, D66) result(K22)
+        ! Returns the K22 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: A55, D11, D66
+
+        real :: K22
+
+        ! Integrate
+        K22 = gauss_quad_2D(integrand, 4)
+
+        contains
+
+            function integrand(xi, eta) result(int)
+                ! Integrand of the K22 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = (A55*this%master%psi(xi, eta, j)*this%master%psi(xi, eta, i) &
+                    + D11*this%d_psi_d_x(xi, eta, i)*this%d_psi_d_x(xi, eta, j) &
+                    + D66*this%d_psi_d_y(xi, eta, i)*this%d_psi_d_y(xi, eta, j) &
+                    )*this%det_J
+
+            end function integrand
+    
+    end function element_get_K22_ij
+
+
+    function element_get_K23_ij(this, i, j, D12, D66) result(K23)
+        ! Returns the K23 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: D12, D66
+
+        real :: K23
+
+        ! Integrate
+        K23 = gauss_quad_2D(integrand, 4)
+
+        contains
+
+            function integrand(xi, eta) result(int)
+                ! Integrand of the K23 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = (D12*this%d_psi_d_x(xi, eta, i)*this%d_psi_d_y(xi, eta, j) &
+                    + D66*this%d_psi_d_y(xi, eta, i)*this%d_psi_d_x(xi, eta, j) &
+                    )*this%det_J
+
+            end function integrand
+    
+    end function element_get_K23_ij
+
+
+    function element_get_K31_ij(this, i, j, A44) result(K31)
+        ! Returns the K31 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: A44
+
+        real :: K31
+
+        ! Cheat
+        K31 = this%get_K13_ij(j, i, A44)
+    
+    end function element_get_K31_ij
+
+
+    function element_get_K32_ij(this, i, j, D12, D66) result(K32)
+        ! Returns the K32 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: D12, D66
+
+        real :: K32
+
+        ! Cheat
+        K32 = this%get_K23_ij(j, i, D12, D66)
+    
+    end function element_get_K32_ij
+
+
+    function element_get_K33_ij(this, i, j, A44, D22, D66) result(K33)
+        ! Returns the K33 stiffness coefficient for the given node j and the shape function i
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,intent(in) :: A44, D22, D66
+
+        real :: K33
+
+        ! Integrate
+        K33 = gauss_quad_2D(integrand, 4)
+
+        contains
+
+            function integrand(xi, eta) result(int)
+                ! Integrand of the K23 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = (A44*this%master%psi(xi, eta,i)*this%master%psi(xi, eta, j) &
+                    + D22*this%d_psi_d_y(xi, eta, i)*this%d_psi_d_y(xi, eta, j) &
+                    + D66*this%d_psi_d_x(xi, eta, i)*this%d_psi_d_x(xi, eta, j) &
+                    )*this%det_J
+
+            end function integrand
+    
+    end function element_get_K33_ij
+
 end module element_mod
