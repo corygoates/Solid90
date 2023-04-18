@@ -53,6 +53,7 @@ module element_mod
             procedure :: get_K31_ij => element_get_K31_ij
             procedure :: get_K32_ij => element_get_K32_ij
             procedure :: get_K33_ij => element_get_K33_ij
+            procedure :: get_elemental_stiffness => element_get_elemental_stiffness
 
     end type element
     
@@ -588,5 +589,30 @@ contains
             end function integrand_red
     
     end function element_get_K33_ij
+
+
+    function element_get_elemental_stiffness(this, i, j, A, D) result(K)
+        ! Returns the i,j elemental stiffness matrix
+
+        implicit none
+        
+        class(element),intent(in) :: this
+        integer,intent(in) :: i, j
+        real,dimension(:,:),allocatable :: A, D
+
+        real,dimension(3,3) :: K
+
+        ! Get elements
+        K(1,1) = this%get_K11_ij(i, j, A(4,4), A(5,5))
+        K(1,2) = this%get_K12_ij(i, j, A(5,5))
+        K(1,3) = this%get_K13_ij(i, j, A(4,4))
+        K(2,1) = this%get_K21_ij(i, j, A(5,5))
+        K(2,2) = this%get_K22_ij(i, j, A(5,5), D(1,1), D(6,6))
+        K(2,3) = this%get_K23_ij(i, j, D(1,2), D(6,6))
+        K(3,1) = this%get_K31_ij(i, j, A(4,4))
+        K(3,2) = this%get_K32_ij(i, j, D(1,2), D(6,6))
+        K(3,3) = this%get_K33_ij(i, j, A(4,4), D(2,2), D(6,6))
+        
+    end function element_get_elemental_stiffness
 
 end module element_mod
