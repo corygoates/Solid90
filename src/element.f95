@@ -4,6 +4,13 @@ module element_mod
 
     implicit none
 
+    type node
+
+        real,dimension(2) :: loc
+        integer :: index
+
+    end type node
+
     type master_element
         ! A linear element
 
@@ -195,17 +202,17 @@ contains
         ! Caclulate Jacobian
         this%J(1,1) = 0.5*(this%node_locs(1,2) - this%node_locs(1,1))
         this%J(2,2) = 0.5*(this%node_locs(2,3) - this%node_locs(2,2))
-        this%J(1,2) = 0.
-        this%J(2,1) = 0.
+        this%J(1,2) = 0.5*(this%node_locs(2,2) - this%node_locs(2,1))
+        this%J(2,1) = 0.5*(this%node_locs(1,3) - this%node_locs(1,2))
 
         ! Calculate determinant
-        this%det_J = this%J(1,1)*this%J(2,2)
+        this%det_J = this%J(1,1)*this%J(2,2) - this%J(1,2)*this%J(2,1)
 
         ! Calculate inverse
         this%J_star(1,1) = this%J(2,2)/this%det_J
         this%J_star(2,2) = this%J(1,1)/this%det_J
-        this%J_star(1,2) = 0.
-        this%J_star(2,1) = 0.
+        this%J_star(1,2) = this%J(1,2)/this%det_J
+        this%J_star(2,1) = this%J(2,1)/this%det_J
         
     end subroutine element_calc_J
 
@@ -252,7 +259,6 @@ contains
         real :: P
 
         real,dimension(2) :: xi_eta
-        real :: dp_dxi, dp_deta
 
         ! Transform to local
         xi_eta = this%global_to_local((/x, y/))
@@ -319,7 +325,7 @@ contains
         real :: K11
 
         ! Integrate
-        K11 = gauss_quad_2D(integrand, 2)
+        K11 = gauss_quad_2D(integrand, 1) ! Reduced to prevent shear locking
 
         contains
 
@@ -352,7 +358,7 @@ contains
         real :: K12
 
         ! Integrate
-        K12 = gauss_quad_2D(integrand, 3)
+        K12 = gauss_quad_2D(integrand, 1) ! Reduced to prevent shear locking
 
         contains
 
@@ -384,7 +390,7 @@ contains
         real :: K13
 
         ! Integrate
-        K13 = gauss_quad_2D(integrand, 3)
+        K13 = gauss_quad_2D(integrand, 1) ! Reduced to prevent shear locking
 
         contains
 
@@ -434,7 +440,7 @@ contains
         real :: K22
 
         ! Integrate
-        K22 = gauss_quad_2D(integrand, 4)
+        K22 = gauss_quad_2D(integrand, 2) + gauss_quad_2D(integrand_red, 1)
 
         contains
 
@@ -447,12 +453,24 @@ contains
 
                 real :: int
 
-                int = (A55*this%master%psi(xi, eta, j)*this%master%psi(xi, eta, i) &
-                    + D11*this%d_psi_d_x(xi, eta, i)*this%d_psi_d_x(xi, eta, j) &
+                int = (D11*this%d_psi_d_x(xi, eta, i)*this%d_psi_d_x(xi, eta, j) &
                     + D66*this%d_psi_d_y(xi, eta, i)*this%d_psi_d_y(xi, eta, j) &
                     )*this%det_J
 
             end function integrand
+
+            function integrand_red(xi, eta) result(int)
+                ! Reduced integration integrand of the K22 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = A55*this%master%psi(xi, eta, j)*this%master%psi(xi, eta, i)*this%det_J
+
+            end function integrand_red
     
     end function element_get_K22_ij
 
@@ -469,7 +487,7 @@ contains
         real :: K23
 
         ! Integrate
-        K23 = gauss_quad_2D(integrand, 4)
+        K23 = gauss_quad_2D(integrand, 2)
 
         contains
 
@@ -537,7 +555,7 @@ contains
         real :: K33
 
         ! Integrate
-        K33 = gauss_quad_2D(integrand, 4)
+        K33 = gauss_quad_2D(integrand, 2) + gauss_quad_2D(integrand_red, 1)
 
         contains
 
@@ -550,12 +568,24 @@ contains
 
                 real :: int
 
-                int = (A44*this%master%psi(xi, eta,i)*this%master%psi(xi, eta, j) &
-                    + D22*this%d_psi_d_y(xi, eta, i)*this%d_psi_d_y(xi, eta, j) &
+                int = (D22*this%d_psi_d_y(xi, eta, i)*this%d_psi_d_y(xi, eta, j) &
                     + D66*this%d_psi_d_x(xi, eta, i)*this%d_psi_d_x(xi, eta, j) &
                     )*this%det_J
 
             end function integrand
+
+            function integrand_red(xi, eta) result(int)
+                ! Reduced integration integrand of the K23 integral
+
+                implicit none
+                
+                real,intent(in) :: xi, eta
+
+                real :: int
+
+                int = A44*this%master%psi(xi, eta,i)*this%master%psi(xi, eta, j)*this%det_J
+
+            end function integrand_red
     
     end function element_get_K33_ij
 

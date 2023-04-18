@@ -1,14 +1,17 @@
 {
     "plate" : {
         "geometry" : {
-
+            "a" : 1.0,
+            "b" : 1.0,
+            "Nx" : 2,
+            "Ny" : 2,
+            "h" : 0.05
         },
         "material" : {
-
+            "E" : 120e9,
+            "nu" : 0.33
         },
-        "boundary_conditions" : {
-
-        }
+        "boundary_conditions" : "BC.txt"
     },
     "analysis" : {
 
